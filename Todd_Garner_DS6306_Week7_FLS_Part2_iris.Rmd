@@ -1,0 +1,66 @@
+---
+title: "Todd_Garner_DS6306_Week7_Part2_Iris"
+author: "Todd Garner"
+date: "2023-02-15"
+output: html_document
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+knitr::opts_chunk$set(dev = c('pdf', 'png'), 
+        fig.align = 'center', fig.height = 5, fig.width = 8.5, 
+        pdf.options(encoding = "ISOLatin9.enc")) 
+
+library(class)
+library(caret)
+library(e1071)
+library(dplyr)
+library(jsonlite)
+library(ggplot2)
+library(ggthemes)
+library(tidyverse)
+library(gridExtra)
+```
+
+# Part 2, Iris
+
+```{r}
+#View(iris)
+iris_clean = iris %>% filter(!is.na(Sepal.Length) & !is.na(Sepal.Width))
+iterations = 100
+
+for(i in 1:iterations) {
+set.seed(i)
+trainiris = sample(seq(1:length(iris_clean$Sepal.Length)),round(.7*length(iris_clean$Sepal.Length)))
+trainIris = iris_clean[trainiris,]
+testIris = iris_clean[-trainiris,]
+head(trainiris)
+head(testIris)
+
+model <- naiveBayes(trainIris,as.factor(trainIris$Sepal.Length & trainIris$Sepal.Width), laplace = 1) # & trainIris$Sepal.Width
+head(model)
+df <- data.frame(testIris)
+head(df)
+x <- round(predict(model, df, type = "raw"), digits = 1)
+x
+y <- x[,2]
+y
+master_sens[,i] = sensitivity(factor(y), factor(df$Sepal.Length))
+master_spec[,i] = specificity(factor(y), factor(df$Sepal.Length))
+CM <- confusionMatrix(factor(y), factor(df$Sepal.Length), k = i)
+master_acc[,i] = CM$overall
+}
+
+mean_sens = colMeans(master_sens)
+mean_spec = colMeans(master_spec)
+mean_acc = colMeans(master_acc)
+
+which.max(mean_sens)
+max(mean_sens)
+which.max(mean_spec)
+max(mean_spec)
+which.max(mean_acc)
+max(mean_acc)
+
+```
+
