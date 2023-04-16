@@ -47,9 +47,12 @@ dim(Titanic_Sub_filter)
 
 
 model <- naiveBayes(Titanic_Sub_filter[((Titanic_Sub_filter$Age) & (Titanic_Sub_filter$Pclass)), c("Age", "Pclass")], Titanic_Sub_filter$SurvivedF, laplace = 1) 
-df <- Titanic_Sub_filter %>% filter(Age == "30",Pclass == "1")
-predict(model, df)
-predict(model, df, type = "raw")
+#df <- Titanic_Sub_filter %>% filter(Age == "30",Pclass == "1")
+p <- predict(model, Titanic_Sub_filter)
+p
+CM <- confusionMatrix(table(p, Titanic_Sub_filter$SurvivedF))
+CM
+colMeans(predict(model, Titanic_Sub_filter, type = "raw"))
 ```
 Question 2 - ***Split the 891 observations into a training and test set 70% - 30% using this seed and code:***
       *titanicClean = titanic %>% filter(!is.na(Age) & !is.na(Pclass))*
@@ -62,6 +65,7 @@ Question 2 - ***Split the 891 observations into a training and test set 70% - 30
 
 ```{r}
 Titanic_clean = Titanic %>% filter(!is.na(Age) & !is.na(Pclass))
+dim(Titanic_clean)
 set.seed(58)
 trainIndices = sample(seq(1:length(Titanic_clean$Age)),round(.7*length(Titanic_clean$Age)))
 trainTitanic = Titanic_clean[trainIndices,]
@@ -74,21 +78,24 @@ dim(testTitanic)
 Question 3 - ***Train a NB model based on the training set using just the Age and Pclass variables. Use the model to predict the survival of those in the test set and use those results to evaluate the model based on accuracy, sensitivity and specificity. Finally, Compare the results to what you found with the KNN classifier. (At least one slide.)***
 
 ```{r}
-model <- naiveBayes(trainTitanic,as.factor(trainTitanic$Survived) , laplace = 1) 
+model <- naiveBayes(trainTitanic[,c("Age", "Pclass")],as.factor(trainTitanic$Survived) , laplace = 1) 
+model
 summary(model)
+trainTitanic$Survived
 dim(model)
 #head(model)
 df <- data.frame(testTitanic)
 nrow(df)
-x <- round(predict(model, df, type = "raw"), digits = 1)
+x <- predict(model, df[,c("Age", "Pclass")])
+
 y <- x[,2]
 y
 
 
 dim(df$Survived)
 nrow(df$Survived)
-table(y, df$Survived)
-confusionMatrix(table(y, df$Survived))
+table(x, df$Survived)
+confusionMatrix(table(x, df$Survived))
 
 #table(count_("Died"), count("Survived"))
 ```
